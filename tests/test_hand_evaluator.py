@@ -103,3 +103,16 @@ class TestTwoPair:
             category="two_pair",
             chosen5=("KC", "KD", "4H", "4S", "AC"),
         )
+
+
+class TestOnePair:
+    def test_one_pair_orders_pair_then_three_kickers(self) -> None:
+        board = ["JC", "JD", "7H", "4S", "2D"]
+        hole_cards = ["AC", "9C"]
+
+        result = evaluate_best_hand(board=board, hole_cards=hole_cards)
+
+        assert result == HandResult(
+            category="one_pair",
+            chosen5=("JC", "JD", "AC", "9C", "7H"),
+        )
