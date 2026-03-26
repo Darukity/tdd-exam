@@ -35,3 +35,15 @@ def test_flush_uses_best_five_suited_cards() -> None:
         category="flush",
         chosen5=("AH", "JH", "9H", "6H", "4H"),
     )
+
+
+def test_straight_flush_beats_plain_flush_or_straight() -> None:
+    board = ["TH", "JH", "QH", "2C", "3D"]
+    hole_cards = ["KH", "AH"]
+
+    result = evaluate_best_hand(board=board, hole_cards=hole_cards)
+
+    assert result == HandResult(
+        category="straight_flush",
+        chosen5=("AH", "KH", "QH", "JH", "TH"),
+    )
