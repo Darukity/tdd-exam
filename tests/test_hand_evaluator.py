@@ -1,4 +1,4 @@
-from holdem import HandResult, evaluate_best_hand
+from holdem import ComparisonResult, HandResult, compare_players, evaluate_best_hand
 
 
 class TestHighCard:
@@ -115,4 +115,21 @@ class TestOnePair:
         assert result == HandResult(
             category="one_pair",
             chosen5=("JC", "JD", "AC", "9C", "7H"),
+        )
+
+
+class TestComparison:
+    def test_board_plays_straight_results_in_split_pot(self) -> None:
+        board = ["5C", "6D", "7H", "8S", "9D"]
+        players_hole_cards = [["AC", "AD"], ["KC", "QD"]]
+
+        result = compare_players(board=board, players_hole_cards=players_hole_cards)
+
+        expected_hand = HandResult(
+            category="straight",
+            chosen5=("9D", "8S", "7H", "6D", "5C"),
+        )
+        assert result == ComparisonResult(
+            winners=(0, 1),
+            hands=(expected_hand, expected_hand),
         )

@@ -26,6 +26,12 @@ class HandResult:
     chosen5: tuple[Card, Card, Card, Card, Card]
 
 
+@dataclass(frozen=True)
+class ComparisonResult:
+    winners: tuple[int, ...]
+    hands: tuple[HandResult, ...]
+
+
 def _card_rank_value(card: Card) -> int:
     return RANK_TO_VALUE[card[0]]
 
@@ -258,3 +264,7 @@ def evaluate_best_hand(board: Sequence[Card], hole_cards: Sequence[Card]) -> Han
         category="high_card",
         chosen5=_as_chosen5(chosen5),
     )
+
+
+def compare_players(board: Sequence[Card], players_hole_cards: Sequence[Sequence[Card]]) -> ComparisonResult:
+    pass
