@@ -48,6 +48,23 @@ def _find_flush_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Ca
     return None
 
 
+def _find_straight_flush_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Card] | None:
+    cards_by_suit: dict[str, list[Card]] = {}
+    for card in cards:
+        suit = card[1]
+        cards_by_suit.setdefault(suit, []).append(card)
+
+    for suited_cards in cards_by_suit.values():
+        if len(suited_cards) < 5:
+            continue
+
+        straight_values = _find_straight_values(suited_cards)
+        if straight_values is not None:
+            return _pick_cards_for_ranks(suited_cards, straight_values)
+
+    return None
+
+
 def _find_straight_values(cards: Sequence[Card]) -> list[int] | None:
     rank_values = {_card_rank_value(card) for card in cards}
     if 14 in rank_values:
@@ -79,6 +96,13 @@ def _pick_cards_for_ranks(cards: Sequence[Card], ranks_desc: Sequence[int]) -> t
 
 def evaluate_best_hand(board: Sequence[Card], hole_cards: Sequence[Card]) -> HandResult:
     all_cards = tuple(board) + tuple(hole_cards)
+
+    straight_flush_cards = _find_straight_flush_cards(all_cards)
+    if straight_flush_cards is not None:
+        return HandResult(
+            category="straight_flush",
+            chosen5=straight_flush_cards,
+        )
 
     flush_cards = _find_flush_cards(all_cards)
     if flush_cards is not None:
