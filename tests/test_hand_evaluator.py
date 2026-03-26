@@ -23,3 +23,15 @@ def test_ace_low_straight_wheel() -> None:
         category="straight",
         chosen5=("5C", "4S", "3H", "2D", "AC"),
     )
+
+
+def test_flush_uses_best_five_suited_cards() -> None:
+    board = ["AH", "JH", "9H", "4H", "2C"]
+    hole_cards = ["6H", "KD"]
+
+    result = evaluate_best_hand(board=board, hole_cards=hole_cards)
+
+    assert result == HandResult(
+        category="flush",
+        chosen5=("AH", "JH", "9H", "6H", "4H"),
+    )
