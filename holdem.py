@@ -30,6 +30,10 @@ def _card_rank_value(card: Card) -> int:
     return RANK_TO_VALUE[card[0]]
 
 
+def _as_chosen5(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Card]:
+    return (cards[0], cards[1], cards[2], cards[3], cards[4])
+
+
 def _find_flush_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Card] | None:
     cards_by_suit: dict[str, list[Card]] = {}
     for card in cards:
@@ -39,13 +43,7 @@ def _find_flush_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Ca
     for suited_cards in cards_by_suit.values():
         if len(suited_cards) >= 5:
             sorted_suited_cards = sorted(suited_cards, key=_card_rank_value, reverse=True)
-            return (
-                sorted_suited_cards[0],
-                sorted_suited_cards[1],
-                sorted_suited_cards[2],
-                sorted_suited_cards[3],
-                sorted_suited_cards[4],
-            )
+            return _as_chosen5(sorted_suited_cards)
 
     return None
 
@@ -76,7 +74,7 @@ def _pick_cards_for_ranks(cards: Sequence[Card], ranks_desc: Sequence[int]) -> t
                 chosen.append(card)
                 break
 
-    return (chosen[0], chosen[1], chosen[2], chosen[3], chosen[4])
+    return _as_chosen5(chosen)
 
 
 def evaluate_best_hand(board: Sequence[Card], hole_cards: Sequence[Card]) -> HandResult:
@@ -101,5 +99,5 @@ def evaluate_best_hand(board: Sequence[Card], hole_cards: Sequence[Card]) -> Han
 
     return HandResult(
         category="high_card",
-        chosen5=(chosen5[0], chosen5[1], chosen5[2], chosen5[3], chosen5[4]),
+        chosen5=_as_chosen5(chosen5),
     )
