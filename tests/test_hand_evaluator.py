@@ -64,3 +64,16 @@ class TestFourOfAKind:
             category="four_of_a_kind",
             chosen5=("7C", "7D", "7H", "7S", "AC"),
         )
+
+
+class TestFullHouse:
+    def test_full_house_uses_trip_rank_then_pair_rank(self) -> None:
+        board = ["KC", "KD", "KH", "2S", "2D"]
+        hole_cards = ["7C", "9C"]
+
+        result = evaluate_best_hand(board=board, hole_cards=hole_cards)
+
+        assert result == HandResult(
+            category="full_house",
+            chosen5=("KC", "KD", "KH", "2S", "2D"),
+        )
