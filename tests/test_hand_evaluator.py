@@ -192,6 +192,14 @@ class TestComparison:
 
         assert result.winners == (0,)
 
+    def test_one_pair_tiebreak_compares_pair_rank_before_kickers(self) -> None:
+        board = ["7H", "4S", "2D", "9C", "3D"]
+        players_hole_cards = [["KC", "KD"], ["AC", "AD"]]
+
+        result = compare_players(board=board, players_hole_cards=players_hole_cards)
+
+        assert result.winners == (1,)
+
     def test_three_of_a_kind_tiebreak_compares_kickers(self) -> None:
         board = ["QC", "QD", "QH", "3S", "2D"]
         players_hole_cards = [["AC", "9C"], ["AC", "8C"]]
