@@ -84,6 +84,28 @@ def _find_four_of_a_kind_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card,
     return None
 
 
+def _find_full_house_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Card] | None:
+    cards_by_rank = _group_cards_by_rank(cards)
+
+    trip_ranks = sorted([rank for rank, rank_cards in cards_by_rank.items() if len(rank_cards) >= 3], reverse=True)
+    if not trip_ranks:
+        return None
+
+    for trip_rank in trip_ranks:
+        pair_ranks = sorted(
+            [rank for rank, rank_cards in cards_by_rank.items() if rank != trip_rank and len(rank_cards) >= 2],
+            reverse=True,
+        )
+
+        if pair_ranks:
+            pair_rank = pair_ranks[0]
+            trip_cards = cards_by_rank[trip_rank][:3]
+            pair_cards = cards_by_rank[pair_rank][:2]
+            return _as_chosen5([trip_cards[0], trip_cards[1], trip_cards[2], pair_cards[0], pair_cards[1]])
+
+    return None
+
+
 def _find_straight_values(cards: Sequence[Card]) -> list[int] | None:
     rank_values = {_card_rank_value(card) for card in cards}
     if 14 in rank_values:
@@ -128,6 +150,13 @@ def evaluate_best_hand(board: Sequence[Card], hole_cards: Sequence[Card]) -> Han
         return HandResult(
             category="four_of_a_kind",
             chosen5=four_of_a_kind_cards,
+        )
+
+    full_house_cards = _find_full_house_cards(all_cards)
+    if full_house_cards is not None:
+        return HandResult(
+            category="full_house",
+            chosen5=full_house_cards,
         )
 
     flush_cards = _find_flush_cards(all_cards)
