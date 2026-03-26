@@ -106,6 +106,24 @@ def _find_full_house_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Car
     return None
 
 
+def _find_three_of_a_kind_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Card] | None:
+    cards_by_rank = _group_cards_by_rank(cards)
+
+    trip_ranks = sorted([rank for rank, rank_cards in cards_by_rank.items() if len(rank_cards) >= 3], reverse=True)
+    if not trip_ranks:
+        return None
+
+    trip_rank = trip_ranks[0]
+    trip_cards = cards_by_rank[trip_rank][:3]
+    kickers = sorted(
+        [card for card in cards if _card_rank_value(card) != trip_rank],
+        key=_card_rank_value,
+        reverse=True,
+    )
+
+    return _as_chosen5([trip_cards[0], trip_cards[1], trip_cards[2], kickers[0], kickers[1]])
+
+
 def _find_straight_values(cards: Sequence[Card]) -> list[int] | None:
     rank_values = {_card_rank_value(card) for card in cards}
     if 14 in rank_values:
@@ -171,6 +189,13 @@ def evaluate_best_hand(board: Sequence[Card], hole_cards: Sequence[Card]) -> Han
         return HandResult(
             category="straight",
             chosen5=_pick_cards_for_ranks(all_cards, straight_values),
+        )
+
+    three_of_a_kind_cards = _find_three_of_a_kind_cards(all_cards)
+    if three_of_a_kind_cards is not None:
+        return HandResult(
+            category="three_of_a_kind",
+            chosen5=three_of_a_kind_cards,
         )
 
     sorted_cards = sorted(all_cards, key=_card_rank_value, reverse=True)
