@@ -124,6 +124,27 @@ def _find_three_of_a_kind_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card
     return _as_chosen5([trip_cards[0], trip_cards[1], trip_cards[2], kickers[0], kickers[1]])
 
 
+def _find_two_pair_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Card] | None:
+    cards_by_rank = _group_cards_by_rank(cards)
+
+    pair_ranks = sorted([rank for rank, rank_cards in cards_by_rank.items() if len(rank_cards) >= 2], reverse=True)
+    if len(pair_ranks) < 2:
+        return None
+
+    high_pair_rank = pair_ranks[0]
+    low_pair_rank = pair_ranks[1]
+    high_pair_cards = cards_by_rank[high_pair_rank][:2]
+    low_pair_cards = cards_by_rank[low_pair_rank][:2]
+
+    kickers = sorted(
+        [card for card in cards if _card_rank_value(card) not in {high_pair_rank, low_pair_rank}],
+        key=_card_rank_value,
+        reverse=True,
+    )
+
+    return _as_chosen5([high_pair_cards[0], high_pair_cards[1], low_pair_cards[0], low_pair_cards[1], kickers[0]])
+
+
 def _find_straight_values(cards: Sequence[Card]) -> list[int] | None:
     rank_values = {_card_rank_value(card) for card in cards}
     if 14 in rank_values:
@@ -196,6 +217,13 @@ def evaluate_best_hand(board: Sequence[Card], hole_cards: Sequence[Card]) -> Han
         return HandResult(
             category="three_of_a_kind",
             chosen5=three_of_a_kind_cards,
+        )
+
+    two_pair_cards = _find_two_pair_cards(all_cards)
+    if two_pair_cards is not None:
+        return HandResult(
+            category="two_pair",
+            chosen5=two_pair_cards,
         )
 
     sorted_cards = sorted(all_cards, key=_card_rank_value, reverse=True)
