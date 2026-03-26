@@ -77,3 +77,16 @@ class TestFullHouse:
             category="full_house",
             chosen5=("KC", "KD", "KH", "2S", "2D"),
         )
+
+
+class TestThreeOfAKind:
+    def test_three_of_a_kind_uses_trip_then_two_high_kickers(self) -> None:
+        board = ["QC", "QD", "QH", "3S", "2D"]
+        hole_cards = ["AC", "9C"]
+
+        result = evaluate_best_hand(board=board, hole_cards=hole_cards)
+
+        assert result == HandResult(
+            category="three_of_a_kind",
+            chosen5=("QC", "QD", "QH", "AC", "9C"),
+        )
