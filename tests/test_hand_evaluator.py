@@ -51,3 +51,16 @@ class TestStraightFlush:
             category="straight_flush",
             chosen5=("AH", "KH", "QH", "JH", "TH"),
         )
+
+
+class TestFourOfAKind:
+    def test_four_of_a_kind_uses_quad_rank_then_kicker(self) -> None:
+        board = ["7C", "7D", "7H", "7S", "2D"]
+        hole_cards = ["AC", "KC"]
+
+        result = evaluate_best_hand(board=board, hole_cards=hole_cards)
+
+        assert result == HandResult(
+            category="four_of_a_kind",
+            chosen5=("7C", "7D", "7H", "7S", "AC"),
+        )
