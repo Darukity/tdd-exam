@@ -19,6 +19,18 @@ RANK_TO_VALUE = {
     "A": 14,
 }
 
+CATEGORY_STRENGTH = {
+    "high_card": 1,
+    "one_pair": 2,
+    "two_pair": 3,
+    "three_of_a_kind": 4,
+    "straight": 5,
+    "flush": 6,
+    "full_house": 7,
+    "four_of_a_kind": 8,
+    "straight_flush": 9,
+}
+
 
 @dataclass(frozen=True)
 class HandResult:
@@ -198,6 +210,39 @@ def _pick_cards_for_ranks(cards: Sequence[Card], ranks_desc: Sequence[int]) -> t
     return _as_chosen5(chosen)
 
 
+def _hand_tiebreak_values(hand: HandResult) -> tuple[int, ...]:
+    values = tuple(_card_rank_value(card) for card in hand.chosen5)
+
+    if hand.category in {"straight", "straight_flush"}:
+        if values == (14, 5, 4, 3, 2) or values == (5, 4, 3, 2, 14):
+            return (5,)
+        return (max(values),)
+
+    if hand.category == "four_of_a_kind":
+        return (values[0], values[4])
+
+    if hand.category == "full_house":
+        return (values[0], values[3])
+
+    if hand.category in {"flush", "high_card"}:
+        return values
+
+    if hand.category == "three_of_a_kind":
+        return (values[0], values[3], values[4])
+
+    if hand.category == "two_pair":
+        return (values[0], values[2], values[4])
+
+    if hand.category == "one_pair":
+        return (values[0], values[2], values[3], values[4])
+
+    return values
+
+
+def _hand_sort_key(hand: HandResult) -> tuple[int, tuple[int, ...]]:
+    return (CATEGORY_STRENGTH[hand.category], _hand_tiebreak_values(hand))
+
+
 def evaluate_best_hand(board: Sequence[Card], hole_cards: Sequence[Card]) -> HandResult:
     all_cards = tuple(board) + tuple(hole_cards)
 
@@ -267,4 +312,12 @@ def evaluate_best_hand(board: Sequence[Card], hole_cards: Sequence[Card]) -> Han
 
 
 def compare_players(board: Sequence[Card], players_hole_cards: Sequence[Sequence[Card]]) -> ComparisonResult:
-    pass
+    hands = tuple(evaluate_best_hand(board=board, hole_cards=hole_cards) for hole_cards in players_hole_cards)
+    keys = tuple(_hand_sort_key(hand) for hand in hands)
+    best_key = max(keys)
+    winners = tuple(index for index, key in enumerate(keys) if key == best_key)
+
+    return ComparisonResult(
+        winners=winners,
+        hands=hands,
+    )
