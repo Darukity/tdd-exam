@@ -210,6 +210,11 @@ def _pick_cards_for_ranks(cards: Sequence[Card], ranks_desc: Sequence[int]) -> t
     return _as_chosen5(chosen)
 
 
+def _validate_no_duplicate_cards(cards: Sequence[Card]) -> None:
+    if len(cards) != len(set(cards)):
+        raise ValueError("Duplicate cards are not allowed")
+
+
 def _hand_tiebreak_values(hand: HandResult) -> tuple[int, ...]:
     values = tuple(_card_rank_value(card) for card in hand.chosen5)
 
@@ -245,6 +250,7 @@ def _hand_sort_key(hand: HandResult) -> tuple[int, tuple[int, ...]]:
 
 def evaluate_best_hand(board: Sequence[Card], hole_cards: Sequence[Card]) -> HandResult:
     all_cards = tuple(board) + tuple(hole_cards)
+    _validate_no_duplicate_cards(all_cards)
 
     straight_flush_cards = _find_straight_flush_cards(all_cards)
     if straight_flush_cards is not None:
