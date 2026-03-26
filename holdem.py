@@ -145,6 +145,24 @@ def _find_two_pair_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card,
     return _as_chosen5([high_pair_cards[0], high_pair_cards[1], low_pair_cards[0], low_pair_cards[1], kickers[0]])
 
 
+def _find_one_pair_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Card] | None:
+    cards_by_rank = _group_cards_by_rank(cards)
+
+    pair_ranks = sorted([rank for rank, rank_cards in cards_by_rank.items() if len(rank_cards) >= 2], reverse=True)
+    if not pair_ranks:
+        return None
+
+    pair_rank = pair_ranks[0]
+    pair_cards = cards_by_rank[pair_rank][:2]
+    kickers = sorted(
+        [card for card in cards if _card_rank_value(card) != pair_rank],
+        key=_card_rank_value,
+        reverse=True,
+    )
+
+    return _as_chosen5([pair_cards[0], pair_cards[1], kickers[0], kickers[1], kickers[2]])
+
+
 def _find_straight_values(cards: Sequence[Card]) -> list[int] | None:
     rank_values = {_card_rank_value(card) for card in cards}
     if 14 in rank_values:
@@ -224,6 +242,13 @@ def evaluate_best_hand(board: Sequence[Card], hole_cards: Sequence[Card]) -> Han
         return HandResult(
             category="two_pair",
             chosen5=two_pair_cards,
+        )
+
+    one_pair_cards = _find_one_pair_cards(all_cards)
+    if one_pair_cards is not None:
+        return HandResult(
+            category="one_pair",
+            chosen5=one_pair_cards,
         )
 
     sorted_cards = sorted(all_cards, key=_card_rank_value, reverse=True)
