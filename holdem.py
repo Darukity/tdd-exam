@@ -34,13 +34,16 @@ def _as_chosen5(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Card]:
     return (cards[0], cards[1], cards[2], cards[3], cards[4])
 
 
-def _find_flush_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Card] | None:
+def _group_cards_by_suit(cards: Sequence[Card]) -> dict[str, list[Card]]:
     cards_by_suit: dict[str, list[Card]] = {}
     for card in cards:
         suit = card[1]
         cards_by_suit.setdefault(suit, []).append(card)
+    return cards_by_suit
 
-    for suited_cards in cards_by_suit.values():
+
+def _find_flush_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Card] | None:
+    for suited_cards in _group_cards_by_suit(cards).values():
         if len(suited_cards) >= 5:
             sorted_suited_cards = sorted(suited_cards, key=_card_rank_value, reverse=True)
             return _as_chosen5(sorted_suited_cards)
@@ -49,12 +52,7 @@ def _find_flush_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Ca
 
 
 def _find_straight_flush_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Card] | None:
-    cards_by_suit: dict[str, list[Card]] = {}
-    for card in cards:
-        suit = card[1]
-        cards_by_suit.setdefault(suit, []).append(card)
-
-    for suited_cards in cards_by_suit.values():
+    for suited_cards in _group_cards_by_suit(cards).values():
         if len(suited_cards) < 5:
             continue
 
