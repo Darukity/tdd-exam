@@ -1,3 +1,5 @@
+import pytest
+
 from holdem import ComparisonResult, HandResult, compare_players, evaluate_best_hand
 
 
@@ -141,3 +143,76 @@ class TestComparison:
         result = compare_players(board=board, players_hole_cards=players_hole_cards)
 
         assert result.winners == (0,)
+
+    def test_flush_vs_flush_compares_all_five_cards(self) -> None:
+        board = ["AH", "JH", "8H", "4H", "2C"]
+        players_hole_cards = [["9H", "KD"], ["7H", "AS"]]
+
+        result = compare_players(board=board, players_hole_cards=players_hole_cards)
+
+        assert result.winners == (0,)
+
+    def test_straight_tiebreak_uses_highest_card(self) -> None:
+        board = ["AC", "2D", "3H", "4S", "9D"]
+        players_hole_cards = [["5C", "KD"], ["5D", "6C"]]
+
+        result = compare_players(board=board, players_hole_cards=players_hole_cards)
+
+        assert result.winners == (1,)
+
+    def test_full_house_tiebreak_compares_trip_rank_first(self) -> None:
+        board = ["2C", "2D", "KH", "KC", "9S"]
+        players_hole_cards = [["2H", "QD"], ["KD", "QS"]]
+
+        result = compare_players(board=board, players_hole_cards=players_hole_cards)
+
+        assert result.winners == (1,)
+
+    def test_full_house_tiebreak_uses_pair_rank_when_trips_equal(self) -> None:
+        board = ["KC", "KD", "KH", "2S", "3D"]
+        players_hole_cards = [["AC", "AD"], ["QC", "QD"]]
+
+        result = compare_players(board=board, players_hole_cards=players_hole_cards)
+
+        assert result.winners == (0,)
+
+    def test_two_pair_tiebreak_compares_high_pair_first(self) -> None:
+        board = ["QC", "QD", "4H", "3S", "2D"]
+        players_hole_cards = [["KC", "KH"], ["JC", "JH"]]
+
+        result = compare_players(board=board, players_hole_cards=players_hole_cards)
+
+        assert result.winners == (0,)
+
+    def test_one_pair_tiebreak_compares_kickers(self) -> None:
+        board = ["JC", "JD", "7H", "4S", "2D"]
+        players_hole_cards = [["AC", "9C"], ["AC", "8C"]]
+
+        result = compare_players(board=board, players_hole_cards=players_hole_cards)
+
+        assert result.winners == (0,)
+
+    def test_three_of_a_kind_tiebreak_compares_kickers(self) -> None:
+        board = ["QC", "QD", "QH", "3S", "2D"]
+        players_hole_cards = [["AC", "9C"], ["AC", "8C"]]
+
+        result = compare_players(board=board, players_hole_cards=players_hole_cards)
+
+        assert result.winners == (0,)
+
+    def test_straight_flush_tiebreak_uses_highest_card(self) -> None:
+        board = ["2H", "3H", "4H", "5H", "9D"]
+        players_hole_cards = [["AH", "KD"], ["6H", "QC"]]
+
+        result = compare_players(board=board, players_hole_cards=players_hole_cards)
+
+        assert result.winners == (1,)
+
+
+class TestInputValidation:
+    def test_rejects_duplicate_cards_between_board_and_hole_cards(self) -> None:
+        board = ["AH", "KH", "QH", "JH", "TH"]
+        hole_cards = ["AH", "2C"]
+
+        with pytest.raises(ValueError):
+            evaluate_best_hand(board=board, hole_cards=hole_cards)
