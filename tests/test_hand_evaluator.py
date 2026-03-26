@@ -133,3 +133,11 @@ class TestComparison:
             winners=(0, 1),
             hands=(expected_hand, expected_hand),
         )
+
+    def test_quads_on_board_kicker_decides_winner(self) -> None:
+        board = ["7C", "7D", "7H", "7S", "2D"]
+        players_hole_cards = [["AC", "KC"], ["QC", "JC"]]
+
+        result = compare_players(board=board, players_hole_cards=players_hole_cards)
+
+        assert result.winners == (0,)
