@@ -63,6 +63,22 @@ def _find_straight_flush_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card,
     return None
 
 
+def _find_four_of_a_kind_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Card] | None:
+    cards_by_rank: dict[int, list[Card]] = {}
+    for card in cards:
+        rank = _card_rank_value(card)
+        cards_by_rank.setdefault(rank, []).append(card)
+
+    for rank in range(14, 1, -1):
+        rank_cards = cards_by_rank.get(rank, [])
+        if len(rank_cards) == 4:
+            remaining_cards = [card for card in cards if _card_rank_value(card) != rank]
+            kicker = sorted(remaining_cards, key=_card_rank_value, reverse=True)[0]
+            return _as_chosen5([rank_cards[0], rank_cards[1], rank_cards[2], rank_cards[3], kicker])
+
+    return None
+
+
 def _find_straight_values(cards: Sequence[Card]) -> list[int] | None:
     rank_values = {_card_rank_value(card) for card in cards}
     if 14 in rank_values:
@@ -100,6 +116,13 @@ def evaluate_best_hand(board: Sequence[Card], hole_cards: Sequence[Card]) -> Han
         return HandResult(
             category="straight_flush",
             chosen5=straight_flush_cards,
+        )
+
+    four_of_a_kind_cards = _find_four_of_a_kind_cards(all_cards)
+    if four_of_a_kind_cards is not None:
+        return HandResult(
+            category="four_of_a_kind",
+            chosen5=four_of_a_kind_cards,
         )
 
     flush_cards = _find_flush_cards(all_cards)
