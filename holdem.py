@@ -215,6 +215,13 @@ def _validate_no_duplicate_cards(cards: Sequence[Card]) -> None:
         raise ValueError("Duplicate cards are not allowed")
 
 
+def _validate_holdem_card_counts(board: Sequence[Card], hole_cards: Sequence[Card]) -> None:
+    if len(board) != 5:
+        raise ValueError("Board must contain exactly 5 cards")
+    if len(hole_cards) != 2:
+        raise ValueError("Hole cards must contain exactly 2 cards")
+
+
 def _hand_tiebreak_values(hand: HandResult) -> tuple[int, ...]:
     values = tuple(_card_rank_value(card) for card in hand.chosen5)
 
@@ -249,6 +256,7 @@ def _hand_sort_key(hand: HandResult) -> tuple[int, tuple[int, ...]]:
 
 
 def evaluate_best_hand(board: Sequence[Card], hole_cards: Sequence[Card]) -> HandResult:
+    _validate_holdem_card_counts(board, hole_cards)
     all_cards = tuple(board) + tuple(hole_cards)
     _validate_no_duplicate_cards(all_cards)
 
@@ -318,6 +326,13 @@ def evaluate_best_hand(board: Sequence[Card], hole_cards: Sequence[Card]) -> Han
 
 
 def compare_players(board: Sequence[Card], players_hole_cards: Sequence[Sequence[Card]]) -> ComparisonResult:
+    all_cards = tuple(board)
+    for hole_cards in players_hole_cards:
+        _validate_holdem_card_counts(board, hole_cards)
+        all_cards += tuple(hole_cards)
+
+    _validate_no_duplicate_cards(all_cards)
+
     hands = tuple(evaluate_best_hand(board=board, hole_cards=hole_cards) for hole_cards in players_hole_cards)
     keys = tuple(_hand_sort_key(hand) for hand in hands)
     best_key = max(keys)
