@@ -42,6 +42,14 @@ def _group_cards_by_suit(cards: Sequence[Card]) -> dict[str, list[Card]]:
     return cards_by_suit
 
 
+def _group_cards_by_rank(cards: Sequence[Card]) -> dict[int, list[Card]]:
+    cards_by_rank: dict[int, list[Card]] = {}
+    for card in cards:
+        rank = _card_rank_value(card)
+        cards_by_rank.setdefault(rank, []).append(card)
+    return cards_by_rank
+
+
 def _find_flush_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Card] | None:
     for suited_cards in _group_cards_by_suit(cards).values():
         if len(suited_cards) >= 5:
@@ -64,10 +72,7 @@ def _find_straight_flush_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card,
 
 
 def _find_four_of_a_kind_cards(cards: Sequence[Card]) -> tuple[Card, Card, Card, Card, Card] | None:
-    cards_by_rank: dict[int, list[Card]] = {}
-    for card in cards:
-        rank = _card_rank_value(card)
-        cards_by_rank.setdefault(rank, []).append(card)
+    cards_by_rank = _group_cards_by_rank(cards)
 
     for rank in range(14, 1, -1):
         rank_cards = cards_by_rank.get(rank, [])
